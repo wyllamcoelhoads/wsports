@@ -4,6 +4,8 @@ aplicação focada em registrar simulações e acompanhar as pontuações e plac
 
 ## Getting Started
 
+# teste isso e umm teste
+
 This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:
