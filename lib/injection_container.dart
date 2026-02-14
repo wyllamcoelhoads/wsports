@@ -10,7 +10,10 @@ import 'package:wsports/features/world_cup/data/datasources/world_cup_remote_dat
 import 'package:wsports/features/world_cup/data/repositories/world_cup_repository_impl.dart';
 import 'package:wsports/features/world_cup/domain/repositories/world_cup_repository.dart';
 import 'package:wsports/features/world_cup/presentation/bloc/world_cup_bloc.dart';
-
+import 'package:wsports/features/simulations/data/datasources/simulation_datasource.dart';
+import 'package:wsports/features/simulations/data/repositories/simulation_repository_impl.dart';
+import 'package:wsports/features/simulations/domain/repositories/simulation_repository.dart';
+import 'package:wsports/features/simulations/domain/usecases/save_simulation_usecase.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -20,7 +23,7 @@ Future<void> init() async {
   sl.registerLazySingleton<F1RemoteDataSource>(() => F1RemoteDataSourceImpl(client: sl()));
 
   //! Features - World Cup (OS NOVOS AQUI!)
-  sl.registerFactory(() => WorldCupBloc(repository: sl()));
+  sl.registerFactory(() => WorldCupBloc(repository: sl(), saveSimulation: sl()));
   sl.registerLazySingleton<WorldCupRepository>(
         () => WorldCupRepositoryImpl(remoteDataSource: sl()),
   );
@@ -33,4 +36,27 @@ Future<void> init() async {
   if (!sl.isRegistered<Dio>()) {
     sl.registerLazySingleton(() => Dio());
   }
+  // ==========================================================
+  // Feature: Simulations
+  // ==========================================================
+
+  // 1. Use Case
+  // O Bloc vai chamar isso. Registramos como LazySingleton (instância única criada só quando precisar)
+  sl.registerLazySingleton(() => SaveSimulationUseCase(sl()));
+
+  // 2. Repository
+  // Quando o UseCase pedir um 'SimulationRepository', entregamos o 'SimulationRepositoryImpl'
+  sl.registerLazySingleton<SimulationRepository>(
+        () => SimulationRepositoryImpl(dataSource: sl()),
+  );
+
+  // 3. Data Source
+  // Quando o Repository pedir um 'SimulationDataSource', entregamos a implementação
+  sl.registerLazySingleton<SimulationDataSource>(
+        () => SimulationDataSourceImpl(), // Se usar Firestore, passaria (firestore: sl()) aqui
+  );
+
+  // 4. Bloc (Futuramente)
+  // Quando criarmos a tela/cubit, registraremos assim:
+  // sl.registerFactory(() => SimulationCubit(saveSimulation: sl()));
 }
